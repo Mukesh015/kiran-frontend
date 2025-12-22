@@ -29,7 +29,7 @@ type IssueRow = {
 
 // NOTE: You currently use IP API. Kept same as your file. :contentReference[oaicite:1]{index=1}
 // Strongly recommended later: "/api/tank-current/all"
-const API_URL = "http://119.18.62.146:3000/api/tank-current/all";
+const API_URL = "https://api.plumuleresearch.co.in/api/tank-current/all";
 
 /* ------------------------ safe JSON fetch ------------------------ */
 async function fetchJsonSafe(url: string) {

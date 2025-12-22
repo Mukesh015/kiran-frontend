@@ -3,10 +3,9 @@
 // Unified API layer for Smart Aqua Sense dashboard
 // -----------------------------------------------------------------------------
 
-const RAW_BASE =
-  import.meta.env.VITE_API_BASE ?? "http://119.18.62.146:3000/api";
 
-const API_BASE = RAW_BASE.replace(/\/+$/, "");
+
+const API_BASE = "https://api.plumuleresearch.co.in/api";
 
 // -----------------------------------------------------------------------------
 // Common envelope type
