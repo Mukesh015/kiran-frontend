@@ -6,7 +6,8 @@ import Dashboard from "./components/Dashboard";
 import Analytics from "./components/Analytics";
 import TanksParameters from "./components/TanksParameters";
 import Notifications from "./components/Notifications";
-import Reports from "./components/Reports";
+// import Reports from "./components/Reports";
+import ReportLogPage from "./components/ReportLogPage";
 
 export default function App() {
   return (
@@ -16,7 +17,7 @@ export default function App() {
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/tanks-parameters" element={<TanksParameters />} />
         <Route path="/notifications" element={<Notifications />} />
-        <Route path="/reports" element={<Reports />} />
+        <Route path="/report/offline-logs" element={<ReportLogPage />} />
       </Routes>
     </Layout>
   );
