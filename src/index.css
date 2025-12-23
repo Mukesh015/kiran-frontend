@@ -3,20 +3,22 @@
 @layer base {
   :root {
     --bg: 255 255 255;
-    --fg: 17 24 39;       /* gray-900 */
+    --fg: 17 24 39; /* gray-900 */
     --muted: 107 114 128; /* gray-500 */
-    --card: 249 250 251;  /* gray-50 */
-    --ring: 59 130 246;   /* blue-500 */
+    --card: 249 250 251; /* gray-50 */
+    --ring: 59 130 246; /* blue-500 */
   }
   .dark {
-    --bg: 17 24 39;       /* gray-900 */
-    --fg: 243 244 246;    /* gray-100 */
+    --bg: 17 24 39; /* gray-900 */
+    --fg: 243 244 246; /* gray-100 */
     --muted: 156 163 175; /* gray-400 */
-    --card: 31 41 55;     /* gray-800 */
+    --card: 31 41 55; /* gray-800 */
     --ring: 59 130 246;
   }
 
-  html, body, #root {
+  html,
+  body,
+  #root {
     height: 100%;
   }
 
@@ -35,4 +37,19 @@
   .icon-btn {
     @apply inline-flex items-center justify-center rounded-xl p-2 border border-gray-300/70 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5;
   }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.2s ease-out;
 }
