@@ -1,245 +1,115 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
-/* =========================================================
-   CONFIG
-========================================================= */
-
-const API_URL = "https://api.plumuleresearch.co.in/api/tank-current/all";
-
-// Fixed 4 users (frontend only)
-const USERS = [
-  "Shri S. Bhowmick",
-  "Shri U. Barman",
-  "Shri R. Das",
-  "Shri A. Ghosh",
-];
-
-/* =========================================================
-   HELPERS
-========================================================= */
-
-function formatTime(iso: string) {
-  if (!iso) return "-";
-  return new Date(iso).toISOString().slice(0, 19).replace("T", " ");
-}
-
-/* =========================================================
-   COMPONENT
-========================================================= */
-
-export default function SMSLogs() {
-  const [rows, setRows] = useState<any[]>([]);
-  const [search, setSearch] = useState("");
-  const [entries, setEntries] = useState(10);
+const SmsLogTable = () => {
+  const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 10;
 
-  /* =======================================================
-     FETCH & TRANSFORM DATA
-  ======================================================= */
-
-  useEffect(() => {
-    fetch(API_URL)
-      .then((r) => r.json())
-      .then((res) => {
-        // Safely extract array from API response
-        const tankArray =
-          Array.isArray(res)
-            ? res
-            : Array.isArray(res?.data)
-            ? res.data
-            : Array.isArray(res?.rows)
-            ? res.rows
-            : [];
-
-        // Keep ONLY required fields
-        const minimal = tankArray.map((t: any) => ({
-          tank_no: t.tank_no,
-          last_updated: t.last_updated,
-          tank_alert_message: t.tank_alert_message,
-        }));
-
-        // Fan-out: one tank -> 4 users (ONLY High / Low)
-        const expanded: any[] = [];
-
-        minimal.forEach((tank: any) => {
-          if (
-            tank.tank_alert_message !== "Low level" &&
-            tank.tank_alert_message !== "High level"
-          ) {
-            return;
-          }
-
-          USERS.forEach((user) => {
-            expanded.push({
-              user,
-              tank: tank.tank_no,
-              type: tank.tank_alert_message,
-              status: "Sent",
-              time: formatTime(tank.last_updated),
-            });
-          });
-        });
-
-        setRows(expanded);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("SMS Logs API error:", err);
-        setError("Failed to load SMS Logs");
-        setLoading(false);
-      });
-  }, []);
-
-  /* =======================================================
-     SEARCH FILTER
-  ======================================================= */
-
-  const filteredRows = useMemo(() => {
-    return rows.filter((r) =>
-      Object.values(r).some((v) =>
-        String(v).toLowerCase().includes(search.toLowerCase())
-      )
-    );
-  }, [rows, search]);
-
-  /* =======================================================
-     PAGINATION LOGIC
-  ======================================================= */
-
-  const totalPages = Math.ceil(filteredRows.length / entries);
+  const fetchSmsLogs = async () => {
+    try {
+      const res = await fetch(
+        `https://api.plumuleresearch.co.in/api/tank/sms-logs?page=${page}&limit=${limit}`
+      );
+      const json = await res.json();
+      if (json.ok) {
+        setData(json.data);
+        setTotalPages(json.pagination.totalPages);
+      }
+    } catch (err) {
+      console.error("Failed to fetch sms logs", err);
+    }
+  };
 
   useEffect(() => {
-    setPage(1);
-  }, [search, entries]);
-
-  const pagedRows = filteredRows.slice(
-    (page - 1) * entries,
-    page * entries
-  );
-
-  /* =======================================================
-     RENDER
-  ======================================================= */
+    fetchSmsLogs();
+  }, [page]);
 
   return (
-    <div className="p-6 bg-[#e9eef5] min-h-screen">
-      <div className="bg-white rounded-xl border border-slate-800/40 p-6">
+    <div className="w-full bg-white rounded-lg shadow">
+      {/* TABLE */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-sm text-left">
+          <thead className="bg-gray-100 text-gray-500 uppercase">
+            <tr>
+              <th className="px-4 py-3">ID</th>
+              <th className="px-4 py-3">TANK</th>
+              <th className="px-4 py-3">USER</th>
+              <th className="px-4 py-3">PHONE</th>
+              <th className="px-4 py-3">TIME</th>
+              <th className="px-4 py-3 text-center">STATUS</th>
+            </tr>
+          </thead>
 
-        {/* HEADER */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">SMS Logs</h2>
-          <div className="flex gap-3">
-            <button className="px-4 py-2 bg-indigo-500 text-white rounded-lg">
-              Export
-            </button>
-            <button
-              className="px-4 py-2 bg-indigo-500 text-white rounded-lg"
-              onClick={() => window.print()}
-            >
-              Print Table
-            </button>
-          </div>
-        </div>
-
-        {/* CONTROLS */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2 text-sm">
-            <span>Show</span>
-            <select
-              value={entries}
-              onChange={(e) => setEntries(Number(e.target.value))}
-              className="border border-slate-400 rounded px-2 py-1 bg-white"
-            >
-              {[10, 25, 50, 100].map((n) => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
-            <span>entries</span>
-          </div>
-
-          <div className="flex items-center gap-2 text-sm">
-            <span>Search:</span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search tanks..."
-              className="border border-slate-400 rounded px-3 py-1 bg-white"
-            />
-          </div>
-        </div>
-
-        {/* TABLE */}
-        <div className="overflow-x-auto border border-slate-800/40 rounded-lg">
-          <table className="w-full text-sm">
-            <thead className="border-b border-slate-400">
+          <tbody className="divide-y">
+            {data.length === 0 ? (
               <tr>
-                <th className="px-4 py-3 text-left font-semibold">SL. NO.</th>
-                <th className="px-4 py-3 text-left font-semibold">USER NAME</th>
-                <th className="px-4 py-3 text-left font-semibold">TANK NAME</th>
-                <th className="px-4 py-3 text-left font-semibold">TYPE</th>
-                <th className="px-4 py-3 text-left font-semibold">STATUS</th>
-                <th className="px-4 py-3 text-left font-semibold">TIME</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {pagedRows.map((r, i) => (
-                <tr key={i} className="border-b border-slate-300">
-                  <td className="px-4 py-3">
-                    {(page - 1) * entries + i + 1}
-                  </td>
-                  <td className="px-4 py-3">{r.user}</td>
-                  <td className="px-4 py-3">{r.tank}</td>
-                  <td className="px-4 py-3">{r.type}</td>
-                  <td className="px-4 py-3 text-green-600 font-medium">
-                    {r.status}
-                  </td>
-                  <td className="px-4 py-3">{r.time}</td>
-                </tr>
-              ))}
-
-              {!loading && pagedRows.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-gray-500">
-                    No SMS Logs found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* FOOTER */}
-        <div className="flex justify-between items-center mt-4 text-sm text-indigo-600">
-          <span>
-            Showing {(page - 1) * entries + 1}
-            {" "}to{" "}
-            {Math.min(page * entries, filteredRows.length)}
-            {" "}of {filteredRows.length} entries
-          </span>
-
-          <div className="flex gap-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .slice(0, 7)
-              .map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setPage(p)}
-                  className={`px-3 py-1 border rounded
-                    ${p === page
-                      ? "bg-indigo-500 text-white"
-                      : "text-indigo-600"
-                    }`}
+                <td
+                  colSpan={6}
+                  className="px-4 py-6 text-center text-gray-500"
                 >
-                  {p}
-                </button>
-              ))}
-          </div>
-        </div>
+                  No records found
+                </td>
+              </tr>
+            ) : (
+              data.map((row, idx) => (
+                <tr
+                  key={`${row.id}-${row.user.id}-${idx}`}
+                  className="hover:bg-gray-50"
+                >
+                  <td className="px-4 py-3 font-medium text-gray-500">{row.id}</td>
+                  <td className="px-4 py-3 text-gray-500">{row.tank_name}</td>
+                  <td className="px-4 py-3 text-gray-500">{row.user.name}</td>
+                  <td className="px-4 py-3 text-gray-500">{row.user.phone}</td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {new Date(row.time).toLocaleString()}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                      Sent
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
+      {/* PAGINATION */}
+      <div className="flex items-center justify-between px-4 py-3 border-t">
+        <span className="text-sm text-gray-600">
+          Page {page} of {totalPages}
+        </span>
+
+        <div className="flex gap-2">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
+            className={`px-3 py-1 rounded border text-sm
+              ${page === 1
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-white hover:bg-gray-50 text-gray-700"
+              }`}
+          >
+            Prev
+          </button>
+
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage((p) => p + 1)}
+            className={`px-3 py-1 rounded border text-sm
+              ${page === totalPages
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-white hover:bg-gray-50 text-gray-700"
+              }`}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default SmsLogTable;
