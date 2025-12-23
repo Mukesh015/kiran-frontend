@@ -40,6 +40,12 @@ const NAV = [
         icon: FileText,
         path: "/report/offline-logs",
       },
+      {
+        id: "sms_logs",
+        label: "SMS Logs",
+        icon: FileText,
+        path: "/report/sms-logs",
+      },
     ],
   },
 ];
