@@ -15,7 +15,7 @@ const ReportLogPage: React.FC = () => {
             const res = await fetch(
                 `https://api.plumuleresearch.co.in/api/tank/logs?page=${page}&limit=${entries}`
             );
-            
+
             const json = await res.json();
 
             if (json.ok) {
@@ -78,6 +78,49 @@ const ReportLogPage: React.FC = () => {
         );
     };
 
+    const handleExportCSV = () => {
+        if (!filteredData.length) return;
+
+        const headers = [
+            "SL NO",
+            "Tank Name",
+            "Offline Time",
+            "Online Time",
+            "Offline Period",
+        ];
+
+        const rows = filteredData.map((row, index) => [
+            startIndex + index + 1,
+            row.tank,
+            row.offline,
+            row.online,
+            row.duration,
+        ]);
+
+        const csvContent = [
+            headers.join(","), // header row
+            ...rows.map((r) =>
+                r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+            ),
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute(
+            "download",
+            `offline_log_page_${page}.csv`
+        );
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
+
 
     return (
         <div className="p-6 bg-slate-200 min-h-screen rounded-xl">
@@ -88,12 +131,13 @@ const ReportLogPage: React.FC = () => {
                 </h1>
 
                 <div className="flex gap-3">
-                    <button className="px-5 py-2 rounded-md bg-indigo-500 text-white text-sm hover:bg-indigo-600">
-                        Export
+                    <button
+                        onClick={handleExportCSV}
+                        className="px-5 py-2 rounded-md uppercase bg-indigo-500 text-white text-sm hover:bg-indigo-600"
+                    >
+                        Export as CSV
                     </button>
-                    <button className="px-5 py-2 rounded-md bg-indigo-500 text-white text-sm hover:bg-indigo-600">
-                        Print Table
-                    </button>
+
                 </div>
             </div>
 
