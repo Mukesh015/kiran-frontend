@@ -114,6 +114,7 @@ const SmsLogTable = () => {
                   <th className="px-4 py-3">TANK</th>
                   <th className="px-4 py-3">USER</th>
                   <th className="px-4 py-3">PHONE</th>
+                  <th className="px-4 py-3">REPORT</th>
                   <th className="px-4 py-3">TIME</th>
                   <th className="px-4 py-3 text-center">STATUS</th>
                 </tr>
@@ -135,10 +136,11 @@ const SmsLogTable = () => {
                       key={`${row?.id}-${row?.user?.id}-${idx}`}
                       className="hover:bg-gray-50"
                     >
-                      <td className="px-4 py-3 font-medium text-gray-500">{row?.id}</td>
+                      <td className="px-4 py-3 font-medium text-gray-500">{idx + 1}</td>
                       <td className="px-4 py-3 text-gray-500">{row?.tank_name}</td>
                       <td className="px-4 py-3 text-gray-500">{row?.user?.name}</td>
                       <td className="px-4 py-3 text-gray-500">{row?.user?.phone}</td>
+                      <td className="px-4 py-3 text-gray-500">{row?.alert}</td>
                       <td className="px-4 py-3 text-gray-500">
                         {new Date(row.time).toLocaleString()}
                       </td>
