@@ -370,7 +370,8 @@ export default function TankCard({ tank }: TankCardProps) {
       <div className="mb-3 flex justify-center">
         <div className="text-center">
           <div className="flex items-center justify-center gap-2">
-            <h3 className="text-base text-xl font-semibold text-slate-900 dark:text-slate-50">
+            {/* <h3 className="text-base text-xl font-semibold text-slate-900 dark:text-slate-50"> */}
+            <h3 className="text-base text-xl font-semibold text-slate-900">
               {location} : {tankNo}
             </h3>
           </div>
