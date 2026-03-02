@@ -135,8 +135,10 @@ function HoverTag({
 }
 
 export default function TankCard({ tank }: TankCardProps) {
-  
+
   const t: any = tank || {};
+
+  console.log('tank', tank)
 
   // ---- Data mapping ----
   const tankNo: string = t.tankNo || t.tank_no || t.tank || "Unknown Tank";
@@ -327,7 +329,7 @@ export default function TankCard({ tank }: TankCardProps) {
     isNoVolumeData ||
     flowStatus.toLowerCase() === "inactive";
 
-  const cardBorderClass = isInactiveTank
+  const cardBorderClass = tank.stale
     ? "border-[3px] border-red-500"
     : "border-[3px] border-emerald-500";
 
@@ -361,6 +363,15 @@ export default function TankCard({ tank }: TankCardProps) {
           : `Safe Band: not configured`,
       ]
       : [`Tank: ${tankNo}`, `Current reading not available`];
+
+  console.log({
+    isStale,
+    updatedAt,
+    isTimeStale,
+    isNoVolumeData,
+    flowStatus,
+    cardBorderClass
+  });
 
   return (
     <div
