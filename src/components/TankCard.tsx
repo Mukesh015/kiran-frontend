@@ -387,8 +387,9 @@ export default function TankCard({ tank }: TankCardProps) {
   const isLastUpdated15MinOld = isGreaterThanMinutes(tank?.last_updated, 1);
   console.log('isLastUpdated15MinOld', isLastUpdated15MinOld);
 
-  const delayInMinutes =
-    (Date.now() - new Date(tank?.last_updated).getTime()) / (1000 * 60);
+  const delayInMinutes = Math.abs(
+    (Date.now() - new Date(tank?.last_updated).getTime()) / (1000 * 60)
+  );
 
   console.log("Delay in minutes:", delayInMinutes);
 
