@@ -13,27 +13,27 @@ import SMSLogs from "./components/SMSLogs";
 
 export default function App() {
   return (
-    // <Layout>
-    //   <Routes>
-    //     <Route path="/" element={<Dashboard />} />
-    //     <Route path="/analytics" element={<Analytics />} />
-    //     <Route path="/tanks-parameters" element={<TanksParameters />} />
-    //     <Route path="/notifications" element={<Notifications />} />
-    //     <Route path="/report/offline-logs" element={<ReportLogPage />} />
-    //     <Route path="/report/sms-logs" element={<SMSLogs />} />
-    //   </Routes>
-    // </Layout>
-    <div
-      style={{
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        fontSize: "28px",
-        fontWeight: "bold",
-      }}
-    >
-      Under Maintenance
-    </div>
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/tanks-parameters" element={<TanksParameters />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/report/offline-logs" element={<ReportLogPage />} />
+        <Route path="/report/sms-logs" element={<SMSLogs />} />
+      </Routes>
+    </Layout>
+    // <div
+    //   style={{
+    //     height: "100vh",
+    //     display: "flex",
+    //     justifyContent: "center",
+    //     alignItems: "center",
+    //     fontSize: "28px",
+    //     fontWeight: "bold",
+    //   }}
+    // >
+    //   Under Maintenance
+    // </div>
   );
 }
