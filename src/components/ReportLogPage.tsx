@@ -10,7 +10,7 @@ interface Log {
     duration: string;
 }
 
-const API_BASE = "http://localhost:3000/api/tank/logs"; // change if deployed
+const API_BASE = "https://api.plumuleresearch.co.in/:3000/api/tank/logs"; // change if deployed
 
 const ReportLogPage: React.FC = () => {
     const [showModal, setShowModal] = useState(false);
