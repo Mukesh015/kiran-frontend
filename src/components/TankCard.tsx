@@ -31,17 +31,17 @@ function sanitizeLevel(current: number, last: number | null) {
 }
 
 /* Show same digits as raw UTC string (Option B) */
-function formatDateTime(v: string | null): string {
+function formatDateTimeUTC(v: string | null): string {
   if (!v) return "--";
 
   const d = new Date(v);
 
-  const day = String(d.getDate()).padStart(2, "0");
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const year = d.getFullYear();
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const year = d.getUTCFullYear();
 
-  let hours = d.getHours();
-  const minutes = String(d.getMinutes()).padStart(2, "0");
+  let hours = d.getUTCHours();
+  const minutes = String(d.getUTCMinutes()).padStart(2, "0");
 
   const ampm = hours >= 12 ? "pm" : "am";
   hours = hours % 12 || 12;
@@ -652,7 +652,7 @@ export default function TankCard({ tank }: TankCardProps) {
       </div>
 
       <div className="mt-1 flex items-center justify-between text-[11px] text-slate-700">
-        <span className="text-lg">Last Update: {formatDateTime(tank.last_updated)}</span>
+        <span className="text-lg">Last Update: {formatDateTimeUTC(tank.last_updated)}</span>
         <Droplet className="h-3 w-3 text-slate-300" />
       </div>
     </div>
