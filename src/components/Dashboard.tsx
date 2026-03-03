@@ -113,6 +113,25 @@ export default function Dashboard() {
     setModalOpen(true);
   }
 
+  function formatDateTime(v: string | null): string {
+    if (!v) return "--";
+
+    const d = new Date(v);
+
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+
+    let hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+
+    const ampm = hours >= 12 ? "pm" : "am";
+    hours = hours % 12 || 12;
+
+    return `${day}/${month}/${year}, ${hours}:${minutes} ${ampm}`;
+  }
+
+
   function closeModal() {
     setModalOpen(false);
   }
@@ -189,6 +208,7 @@ export default function Dashboard() {
     let offline = 0;
 
     const allRows: TankRowForModal[] = [];
+    console.log('allRows', allRows)
 
     for (let i = 0; i < (tanks as any[]).length; i++) {
       const t: any = (tanks as any[])[i];
@@ -227,14 +247,17 @@ export default function Dashboard() {
 
       const { combinedStatus, flowStatus, tankStatus } = normalizeStatus(t);
 
+
       // last update
-      const lastUpdateText =
+      const lastUpdateText = t.last_updated ||
         safeText(t.last_update) ||
         safeText(t.lastUpdate) ||
         safeText(t.updated_at) ||
         safeText(t.timestamp) ||
         safeText(t.time) ||
         "";
+      console.log('lastUpdateText', lastUpdateText)
+
 
       // base issue message from API (real issues)
       const apiIssueReason =
@@ -291,8 +314,16 @@ export default function Dashboard() {
       if (derivedIssue) issues += 1;
     }
 
+
     const onlineRows = allRows.filter((r) => !isOfflineStatus(r.status));
-    const offlineRows = allRows.filter((r) => isOfflineStatus(r.status));
+    const offlineRows = allRows.filter((r) => {
+      const delayInMinutes =
+        (Date.now() - new Date(r.last_updated).getTime()) / (1000 * 60);
+
+      return delayInMinutes > 15 || isOfflineStatus(r.status);
+    });
+
+    console.log('offlineRows', offlineRows)
 
     // Issues modal should NOT include "missing volume" only.
     // It will include only rows that have true issue status keywords.
@@ -504,12 +535,13 @@ export default function Dashboard() {
                         const status = (r.status || "").toLowerCase();
                         const isOff = isOfflineStatus(status);
                         const isIss = isIssueStatus(status);
+                        console.log('r', r)
 
                         const badgeTone = isIss
                           ? "bg-red-100 text-red-800 border-red-200"
                           : isOff
-                          ? "bg-slate-200 text-slate-800 border-slate-300"
-                          : "bg-green-100 text-green-800 border-green-200";
+                            ? "bg-slate-200 text-slate-800 border-slate-300"
+                            : "bg-green-100 text-green-800 border-green-200";
 
                         const fillText =
                           r.fillPct == null
@@ -561,7 +593,7 @@ export default function Dashboard() {
                             <td className="px-4 py-3">{fillText}</td>
 
                             <td className="px-4 py-3">
-                              {r.lastUpdateText ? r.lastUpdateText : "-"}
+                              {formatDateTime(r?.lastUpdateText || null)}
                             </td>
 
                             {showIssueColumn && (

@@ -6,6 +6,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import type { Tank } from "../types";
+import { isGreaterThanMinutes } from "../utils/formattedTimeDiff";
 
 interface TankCardProps {
   tank: Tank | any;
@@ -29,19 +30,18 @@ function sanitizeLevel(current: number, last: number | null) {
   return last + ALPHA * (current - last);
 }
 
-
 /* Show same digits as raw UTC string (Option B) */
 function formatDateTime(v: string | null): string {
   if (!v) return "--";
 
   const d = new Date(v);
 
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const year = d.getUTCFullYear();
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
 
-  let hours = d.getUTCHours();
-  const minutes = String(d.getUTCMinutes()).padStart(2, "0");
+  let hours = d.getHours();
+  const minutes = String(d.getMinutes()).padStart(2, "0");
 
   const ampm = hours >= 12 ? "pm" : "am";
   hours = hours % 12 || 12;
@@ -138,8 +138,6 @@ export default function TankCard({ tank }: TankCardProps) {
 
   const t: any = tank || {};
 
-  console.log('tank', tank)
-
   // ---- Data mapping ----
   const tankNo: string = t.tankNo || t.tank_no || t.tank || "Unknown Tank";
   const location: string = t.location || t.place || "Unknown Location";
@@ -175,6 +173,32 @@ export default function TankCard({ tank }: TankCardProps) {
     0,
     Math.min(100, fillPctFromApi ?? fillPctCalculated ?? 0)
   );
+
+  const getTimeDifference = (isoTime: string) => {
+    const givenTime = new Date(isoTime).getTime();
+    if (isNaN(givenTime)) return null;
+
+    const now = Date.now();
+    const diffMs = givenTime - now; // positive = future, negative = past
+
+    const absMs = Math.abs(diffMs);
+
+    const seconds = Math.floor(absMs / 1000) % 60;
+    const minutes = Math.floor(absMs / (1000 * 60)) % 60;
+    const hours = Math.floor(absMs / (1000 * 60 * 60)) % 24;
+    const days = Math.floor(absMs / (1000 * 60 * 60 * 24));
+
+    return {
+      milliseconds: diffMs,
+      seconds,
+      minutes,
+      hours,
+      days,
+      isFuture: diffMs > 0,
+      isPast: diffMs < 0,
+    };
+  };
+
 
   const flowStatusRaw: string =
     t.flow_status || t.flowStatus || t.flow || (t.stale ? "Inactive" : "Normal");
@@ -329,10 +353,6 @@ export default function TankCard({ tank }: TankCardProps) {
     isNoVolumeData ||
     flowStatus.toLowerCase() === "inactive";
 
-  const cardBorderClass = tank.stale
-    ? "border-[3px] border-red-500"
-    : "border-[3px] border-emerald-500";
-
   // ---------- Tooltip lines ----------
   const currentPct =
     tankVolumeRaw && currentLevelRaw != null
@@ -364,18 +384,21 @@ export default function TankCard({ tank }: TankCardProps) {
       ]
       : [`Tank: ${tankNo}`, `Current reading not available`];
 
-  console.log({
-    isStale,
-    updatedAt,
-    isTimeStale,
-    isNoVolumeData,
-    flowStatus,
-    cardBorderClass
-  });
+  const isLastUpdated15MinOld = isGreaterThanMinutes(tank?.last_updated, 1);
+  console.log('isLastUpdated15MinOld', isLastUpdated15MinOld);
+
+  const delayInMinutes =
+    (Date.now() - new Date(tank?.last_updated).getTime()) / (1000 * 60);
+
+  console.log("Delay in minutes:", delayInMinutes);
+
+  const cardBorderClass = (isInactiveTank || delayInMinutes > 15) // 15 min threshold for staleness
+    ? "border-[3px] border-red-500"
+    : "border-[3px] border-emerald-500";
 
   return (
     <div
-      className={`relative z-0 flex flex-col rounded-2xl ${cardBorderClass} bg-white/80 p-4 shadow-sm backdrop-blur-sm dark:bg-slate-900/70`}
+      className={`relative z-0 flex flex-col rounded-2xl bg-white/80 p-4 shadow-sm backdrop-blur-sm dark:bg-slate-900/70  ${cardBorderClass}`}
     >
       {/* ====================== HEADER ====================== */}
       <div className="mb-3 flex justify-center">
@@ -629,7 +652,7 @@ export default function TankCard({ tank }: TankCardProps) {
       </div>
 
       <div className="mt-1 flex items-center justify-between text-[11px] text-slate-700">
-        <span className="text-lg">Last Update: {formatNow()}</span>
+        <span className="text-lg">Last Update: {formatDateTime(tank.last_updated)}</span>
         <Droplet className="h-3 w-3 text-slate-300" />
       </div>
     </div>
